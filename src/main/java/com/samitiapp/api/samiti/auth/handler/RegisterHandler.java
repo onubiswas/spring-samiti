@@ -2,6 +2,7 @@ package com.samitiapp.api.samiti.auth.handler;
 
 import com.samitiapp.api.samiti.auth.ctrl.RegisterCtrl;
 import com.samitiapp.api.samiti.common.SamitiApiResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,13 +18,15 @@ public class RegisterHandler {
 
     private final Logger log = Logger.getLogger(RegisterHandler.class.getName());
 
+    @Autowired
+    private RegisterCtrl ctrl;
+
     @PostMapping(path = "/v1/register",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> register(@RequestBody RegisterCtrl.RegisterRequest body) throws IOException {
         log.info("registration request start");
 
-        RegisterCtrl ctrl = new RegisterCtrl();
         SamitiApiResponse response = ctrl.run(body);
 
         log.info("registration request ends");

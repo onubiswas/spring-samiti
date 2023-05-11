@@ -8,12 +8,18 @@ import com.samitiapp.api.samiti.common.SamitiApiResponse;
 import com.samitiapp.api.samiti.common.SamitiErrorResponse;
 import com.samitiapp.api.samiti.db.DbProvider;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+@Component
 public class RegisterCtrl {
+
+    @Autowired
+    Firestore db;
 
     private final Logger log = Logger.getLogger(RegisterCtrl.class.getName());
 
@@ -32,7 +38,7 @@ public class RegisterCtrl {
 
     private SamitiApiResponse register(RegisterRequest r) throws IOException {
         UserAccount account = r.toAccount();
-        Firestore db = DbProvider.instance();
+
         ApiFuture<WriteResult> result = db.collection(UserAccount.table)
                 .document(account.getId())
                 .set(account);

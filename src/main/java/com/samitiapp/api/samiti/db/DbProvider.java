@@ -14,10 +14,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
-//@Component
+@Component
 public class DbProvider {
 
-//    @Bean(name = "db-instance")
+    @Bean(name = "db-instance")
     public static Firestore instance() throws IOException {
         InputStream serviceAccount = new FileInputStream(System.getenv("GOOGLE_APPLICATION_CREDENTIALS"));
         GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccount);
