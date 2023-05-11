@@ -2,7 +2,6 @@ package com.samitiapp.api.samiti.auth.models;
 
 import lombok.Data;
 
-import java.util.UUID;
 
 
 @Data
@@ -18,10 +17,11 @@ public class UserAccount {
 
     private Long updatedAt;
 
-    public UserAccount() {
-        this.id = UUID.randomUUID().toString();
+    public UserAccount(String id) {
+        this.id = id;
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
     }
 
 }
+

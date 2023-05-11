@@ -1,29 +1,40 @@
 package com.samitiapp.api.samiti.auth.ctrl;
 
 import com.google.api.core.ApiFuture;
+import com.google.api.gax.rpc.AlreadyExistsException;
+import com.google.api.gax.rpc.ApiException;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
+import com.samitiapp.api.samiti.auth.models.PhoneMapping;
 import com.samitiapp.api.samiti.auth.models.UserAccount;
 import com.samitiapp.api.samiti.common.SamitiApiResponse;
 import com.samitiapp.api.samiti.common.SamitiErrorResponse;
-import com.samitiapp.api.samiti.db.DbProvider;
+import io.grpc.StatusRuntimeException;
 import lombok.Data;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 @Component
 public class RegisterCtrl {
 
-    @Autowired
     Firestore db;
+
+    @Autowired
+    public RegisterCtrl(Firestore db) {
+        this.db = db;
+    }
 
     private final Logger log = Logger.getLogger(RegisterCtrl.class.getName());
 
-    public SamitiApiResponse run(RegisterRequest r) throws IOException {
+    public SamitiApiResponse run(RegisterRequest r) throws ExecutionException, InterruptedException {
         // TODO: check for permissions
         SamitiErrorResponse err = validate(r);
         if(null != err) {
@@ -32,20 +43,50 @@ public class RegisterCtrl {
         }
 
         return register(r);
-
     }
 
 
-    private SamitiApiResponse register(RegisterRequest r) throws IOException {
-        UserAccount account = r.toAccount();
+    private SamitiApiResponse register(RegisterRequest r) throws ExecutionException, InterruptedException {
+        String Id = UUID.randomUUID().toString();
+        PhoneMapping ph = r.toPhoneMapping(Id);
+        UserAccount account = r.toAccount(Id);
 
-        ApiFuture<WriteResult> result = db.collection(UserAccount.table)
-                .document(account.getId())
-                .set(account);
+        try {
+            ApiFuture<Void> res = db.runTransaction(transaction -> {
+                DocumentReference phoneRef = db.collection(PhoneMapping.table).document(ph.getPhone());
+                DocumentReference accountRef = db.collection(UserAccount.table).document(account.getId());
+
+                transaction = transaction.create(phoneRef, ph);
+
+                transaction.create(accountRef, account);
+                return null;
+            });
+
+            res.get();
+        } catch (Exception e) {
+            if (ExceptionUtils.indexOfType(e, AlreadyExistsException.class) != -1) {
+                return duplicateUserCreate();
+            }
+            // internal server error
+            throw e;
+        }
 
         RegisterResponse rr = new RegisterResponse("ok");
 
        return new SamitiApiResponse(rr);
+    }
+
+
+    private SamitiApiResponse duplicateUserCreate() {
+        HashMap<String, String> errors = new HashMap<String, String>();
+        errors.put("phone", "phone number already registered");
+        SamitiErrorResponse err = new SamitiErrorResponse();
+        err.setErrors(errors);
+        err.setMessage("phone number already registered");
+        err.setAppcode(1); // TODO:
+
+
+        return new SamitiApiResponse(err);
     }
 
     private SamitiErrorResponse validate(RegisterRequest body) {
@@ -58,6 +99,7 @@ public class RegisterCtrl {
             err.setAppcode(1);
             return err;
         }
+
 
         log.info("request body validation successful");
 
@@ -83,12 +125,20 @@ public class RegisterCtrl {
         public String phone;
         public String name;
 
-        public UserAccount toAccount() {
-            UserAccount account = new UserAccount();
+        public UserAccount toAccount(String Id) {
+            UserAccount account = new UserAccount(Id);
             account.setName(name);
             account.setPhone(phone);
 
             return account;
+
+        }
+        public PhoneMapping toPhoneMapping(String Id) {
+            PhoneMapping ph = new PhoneMapping(phone);
+            ph.setPhone(phone);
+            ph.setId(Id);
+
+            return ph;
 
         }
 
@@ -99,6 +149,7 @@ public class RegisterCtrl {
                 errors.put("phone", "not valid phone");
             }
             // TODO: advanced check is required
+
 
             return errors ;
         }

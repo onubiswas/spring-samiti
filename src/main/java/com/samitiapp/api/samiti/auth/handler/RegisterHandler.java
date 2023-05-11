@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 
@@ -24,12 +25,17 @@ public class RegisterHandler {
     @PostMapping(path = "/v1/register",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> register(@RequestBody RegisterCtrl.RegisterRequest body) throws IOException {
+    public ResponseEntity<?> register(@RequestBody RegisterCtrl.RegisterRequest body) throws IOException, ExecutionException, InterruptedException {
         log.info("registration request start");
 
         SamitiApiResponse response = ctrl.run(body);
 
         log.info("registration request ends");
+
+        if (response.errors != null) {
+            return new ResponseEntity<>(response.errors, response.errors.getStatusCode());
+        }
+
         return new ResponseEntity<>(response.success, response.successCode);
     }
 
