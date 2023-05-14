@@ -18,6 +18,9 @@ public class PhoneMapping {
 
     private long createdAt;
 
+    public PhoneMapping() {
+    }
+
 
     public PhoneMapping(String phone) {
         this.phone = phone;
