@@ -5,17 +5,16 @@ import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
-import com.google.firestore.v1.Write;
 import com.samitiapp.api.samiti.auth.models.PhoneMapping;
 import com.samitiapp.api.samiti.common.ErrorCodes;
 import com.samitiapp.api.samiti.common.SamitiApiResponse;
 import com.samitiapp.api.samiti.common.SamitiErrorResponse;
-import com.samitiapp.api.samiti.db.DbProvider;
 import lombok.Data;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import com.samitiapp.api.samiti.common.OTPGenerator;
 
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
@@ -65,7 +64,7 @@ public class InitiateLoginCtrl {
 
         try {
 
-            String otp = "1234"; // TODO: generate unique otp
+            String otp = OTPGenerator.generateOTP(4);
             long expiryTs = System.currentTimeMillis();
             expiryTs += 5 * 60 * 1000; // 5 minutes
 
@@ -78,7 +77,6 @@ public class InitiateLoginCtrl {
                     .update(updates);
 
             promise.get(); // block until done
-
 
 
 

@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.samitiapp.api.samiti.common.SamitiApiResponse;
 
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 
