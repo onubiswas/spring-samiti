@@ -9,6 +9,6 @@ import java.util.List;
 public class TokenPayload {
     String userId;
     String phone;
-    List permissions = new ArrayList();
+    List<String> permissions = new ArrayList<>();
 
 }

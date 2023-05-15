@@ -23,5 +23,7 @@ public class UserAccount {
         this.updatedAt = System.currentTimeMillis();
     }
 
+    public UserAccount() {}
+
 }
 

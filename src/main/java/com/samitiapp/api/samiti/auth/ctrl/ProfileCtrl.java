@@ -1,6 +1,7 @@
 package com.samitiapp.api.samiti.auth.ctrl;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.api.core.ApiFuture;
@@ -31,6 +32,7 @@ import java.util.concurrent.ExecutionException;
 @Log
 public class ProfileCtrl {
 
+    @Autowired
     Firestore db;
 
     @Autowired
@@ -53,14 +55,13 @@ public class ProfileCtrl {
     private SamitiApiResponse myProfile(ApiRequest r) throws ExecutionException, InterruptedException {
         try {
             ApiFuture<DocumentSnapshot> promise = db.collection(UserAccount.table)
-                    .document(r.getUserId())
+                    .document(r.decoded.getUserId())
                     .get();
             DocumentSnapshot doc = promise.get(); // wait for the request to end
 
             return new SamitiApiResponse(doc.toObject(UserAccount.class));
 
-
-        }  catch (Exception e) {
+        } catch (Exception e) {
             if (ExceptionUtils.indexOfType(e, NotFoundException.class) != -1) {
                 return userNotRegisteredError();
             }
@@ -72,8 +73,13 @@ public class ProfileCtrl {
     private SamitiErrorResponse permit(ApiRequest r) {
         log.info("permission check start");
         try {
-           r.setDecoded(tokenizer.decodeToken(r.getToken()));
-        } catch (JWTDecodeException e) {
+            TokenPayload decoded = tokenizer.decodeToken(r.getToken());
+
+            System.out.println("decoded token is");
+            System.out.println(decoded.getPhone());
+           r.setDecoded(decoded);
+        } catch (JWTVerificationException e) {
+            log.info("token validation failed: invalid jwt token");
             return SamitiErrorResponse.builder()
                     .statusCode(HttpStatus.FORBIDDEN)
                     .appcode(ErrorCodes.OPERATION_NOT_PERMITTED)
@@ -94,9 +100,6 @@ public class ProfileCtrl {
     public static class ApiRequest  {
         @JsonIgnore
         private String token;
-
-        @JsonIgnore
-        private String userId;
 
         @JsonIgnore
         private TokenPayload decoded;
