@@ -8,6 +8,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
 import com.samitiapp.api.samiti.auth.models.PhoneMapping;
 import com.samitiapp.api.samiti.auth.models.UserAccount;
+import com.samitiapp.api.samiti.common.ErrorCodes;
 import com.samitiapp.api.samiti.common.SamitiApiResponse;
 import com.samitiapp.api.samiti.common.SamitiErrorResponse;
 import io.grpc.StatusRuntimeException;
@@ -80,7 +81,7 @@ public class RegisterCtrl {
     private SamitiApiResponse duplicateUserCreate() {
         HashMap<String, String> errors = new HashMap<String, String>();
         errors.put("phone", "phone number already registered");
-        SamitiErrorResponse err = new SamitiErrorResponse();
+        SamitiErrorResponse err = SamitiErrorResponse.builder().build();
         err.setErrors(errors);
         err.setMessage("phone number already registered");
         err.setAppcode(1); // TODO:
@@ -94,10 +95,10 @@ public class RegisterCtrl {
 
         HashMap<String, String> errors = body.validate();
         if(errors.size() != 0) {
-            SamitiErrorResponse err = new SamitiErrorResponse();
-            err.setErrors(errors);
-            err.setAppcode(1);
-            return err;
+            return SamitiErrorResponse.builder()
+                    .errors(errors)
+                    .appcode(ErrorCodes.INVALID_REQUEST_BODY)
+                    .build();
         }
 
 
@@ -149,7 +150,6 @@ public class RegisterCtrl {
                 errors.put("phone", "not valid phone");
             }
             // TODO: advanced check is required
-
 
             return errors ;
         }

@@ -31,7 +31,7 @@ public class InitiateLoginCtrl {
         log.info("request body validation start");
         if(!body.validate()) {
             log.info("request body validation failed");
-            SamitiErrorResponse err = new SamitiErrorResponse();
+            SamitiErrorResponse err = SamitiErrorResponse.builder().build();
             HashMap<String, String> errors = new HashMap<>();
             errors.put("phone", "invalid phone number");
             err.setErrors(errors);
@@ -93,7 +93,7 @@ public class InitiateLoginCtrl {
     }
 
     private SamitiApiResponse phoneNotRegisteredError(InitiateLoginRequest r) {
-        SamitiErrorResponse err = new SamitiErrorResponse();
+        SamitiErrorResponse err = SamitiErrorResponse.builder().build();
         err.setMessage(String.format("phone number %s is not registered", r.getPhone()));
         err.setAppcode(ErrorCodes.PHONE_NOT_REGISTERED);
         return new SamitiApiResponse(err);

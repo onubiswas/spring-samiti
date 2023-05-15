@@ -1,10 +1,11 @@
 package com.samitiapp.api.samiti.common;
 
+import lombok.Builder;
+import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
-import java.util.HashMap;
-
+@Data
 public class SamitiApiResponse {
     public Object success;
     public HttpStatusCode successCode = HttpStatus.OK;
@@ -18,4 +19,6 @@ public class SamitiApiResponse {
     public SamitiApiResponse(SamitiErrorResponse errors) {
         this.errors = errors;
     }
+
+
 }

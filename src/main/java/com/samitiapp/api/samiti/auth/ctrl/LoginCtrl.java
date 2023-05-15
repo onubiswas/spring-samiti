@@ -78,15 +78,15 @@ public class LoginCtrl {
 
             // check
             if (!r.getOtp().equals(pm.getOtp())) {
-                SamitiErrorResponse err = new SamitiErrorResponse();
-                err.setMessage("otp does not match");
-                err.setAppcode(ErrorCodes.INVALID_OTP);
-               return err;
+                return SamitiErrorResponse.builder()
+                        .message("otp does not match")
+                        .appcode(ErrorCodes.INVALID_OTP)
+                        .build();
             }
 
             // check if expired
             if (pm.getOtpExpiresAt() < System.currentTimeMillis()) {
-                SamitiErrorResponse err = new SamitiErrorResponse();
+                SamitiErrorResponse err =  SamitiErrorResponse.builder().build();
                 err.setMessage("otp expired");
                 err.setAppcode(ErrorCodes.EXPIRED_OTP);
                 return err;
@@ -109,15 +109,9 @@ public class LoginCtrl {
         return null;
 
     }
-    private SamitiApiResponse otpNotFoundError(LoginRequest r) {
-        SamitiErrorResponse err = new SamitiErrorResponse();
-        err.setMessage(String.format("invalid otp"));
-        err.setAppcode(ErrorCodes.INVALID_OTP);
-        return new SamitiApiResponse(err);
 
-    }
     private SamitiApiResponse phoneNotRegisteredError(LoginRequest r) {
-        SamitiErrorResponse err = new SamitiErrorResponse();
+        SamitiErrorResponse err = SamitiErrorResponse.builder().build();
         err.setMessage(String.format("phone number %s is not registered", r.getPhone()));
         err.setAppcode(ErrorCodes.PHONE_NOT_REGISTERED);
         return new SamitiApiResponse(err);
@@ -128,13 +122,14 @@ public class LoginCtrl {
         log.info("request body validation start");
         if(r.phone.length() != 10) {
             log.info("request body validation failed");
-            SamitiErrorResponse err = new SamitiErrorResponse();
+
             HashMap<String, String> errors = new HashMap<>();
             errors.put("phone", "invalid phone number");
-            err.setErrors(errors);
-            err.setMessage("invalid request body");
-            err.setAppcode(ErrorCodes.INVALID_REQUEST_BODY);
-            return err;
+            return SamitiErrorResponse.builder()
+                    .errors(errors)
+                    .message("invalid request body")
+                    .appcode(ErrorCodes.INVALID_REQUEST_BODY)
+                    .build();
         }
 
         log.info("request body validation successful");

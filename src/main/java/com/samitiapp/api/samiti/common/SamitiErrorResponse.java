@@ -1,5 +1,6 @@
 package com.samitiapp.api.samiti.common;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 
 @Getter
 @Setter
+@Builder
 public class SamitiErrorResponse {
     private String message;
 
@@ -17,10 +19,7 @@ public class SamitiErrorResponse {
 
     private int appcode;
 
-    private HttpStatusCode statusCode;
+    private HttpStatusCode statusCode = HttpStatus.BAD_REQUEST;
 
-    public SamitiErrorResponse() {
-        this.statusCode = HttpStatus.BAD_REQUEST;
-    }
 
 }
