@@ -19,7 +19,7 @@ public class SamitiErrorResponse {
 
     private int appcode;
 
-    private HttpStatusCode statusCode = HttpStatus.BAD_REQUEST;
+    private HttpStatusCode statusCode;
 
 
 }

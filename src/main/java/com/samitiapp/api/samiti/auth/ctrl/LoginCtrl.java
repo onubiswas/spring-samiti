@@ -16,6 +16,7 @@ import lombok.Data;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 
@@ -80,6 +81,7 @@ public class LoginCtrl {
             if (!r.getOtp().equals(pm.getOtp())) {
                 return SamitiErrorResponse.builder()
                         .message("otp does not match")
+                        .statusCode(HttpStatus.BAD_REQUEST)
                         .appcode(ErrorCodes.INVALID_OTP)
                         .build();
             }
