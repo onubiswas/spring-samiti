@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import com.samitiapp.api.samiti.common.OTPGenerator;
 
@@ -31,13 +32,16 @@ public class InitiateLoginCtrl {
         log.info("request body validation start");
         if(!body.validate()) {
             log.info("request body validation failed");
-            SamitiErrorResponse err = SamitiErrorResponse.builder().build();
             HashMap<String, String> errors = new HashMap<>();
             errors.put("phone", "invalid phone number");
-            err.setErrors(errors);
-            err.setMessage("invalid request body");
-            err.setAppcode(ErrorCodes.INVALID_REQUEST_BODY);
-            return err;
+
+            return SamitiErrorResponse.builder()
+                    .errors(errors)
+                    .statusCode(HttpStatus.BAD_REQUEST)
+                    .message("invalid request body")
+                    .appcode(ErrorCodes.INVALID_REQUEST_BODY)
+                    .build();
+
         }
 
         log.info("request body validation successful");
@@ -93,11 +97,12 @@ public class InitiateLoginCtrl {
     }
 
     private SamitiApiResponse phoneNotRegisteredError(InitiateLoginRequest r) {
-        SamitiErrorResponse err = SamitiErrorResponse.builder().build();
-        err.setMessage(String.format("phone number %s is not registered", r.getPhone()));
-        err.setAppcode(ErrorCodes.PHONE_NOT_REGISTERED);
+        SamitiErrorResponse err = SamitiErrorResponse.builder()
+                .message(String.format("phone number %s is not registered", r.getPhone()))
+                .appcode(ErrorCodes.PHONE_NOT_REGISTERED)
+                .statusCode(HttpStatus.UNAUTHORIZED)
+                .build();
         return new SamitiApiResponse(err);
-
     }
 
     public SamitiApiResponse run(InitiateLoginRequest r) throws ExecutionException, InterruptedException {

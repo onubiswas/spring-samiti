@@ -3,12 +3,14 @@ package com.samitiapp.api.samiti.auth.ctrl;
 import com.google.api.core.ApiFuture;
 import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
 import com.samitiapp.api.samiti.auth.models.PhoneMapping;
 import com.samitiapp.api.samiti.auth.models.UserAccount;
 import com.samitiapp.api.samiti.common.ErrorCodes;
+import com.samitiapp.api.samiti.common.OTPGenerator;
 import com.samitiapp.api.samiti.common.SamitiApiResponse;
 import com.samitiapp.api.samiti.common.SamitiErrorResponse;
 import io.grpc.StatusRuntimeException;
@@ -51,6 +53,17 @@ public class RegisterCtrl {
         String Id = UUID.randomUUID().toString();
         PhoneMapping ph = r.toPhoneMapping(Id);
         UserAccount account = r.toAccount(Id);
+
+        ph.setCreatedAt(System.currentTimeMillis());
+        account.setCreatedAt(System.currentTimeMillis());
+        account.setUpdatedAt(System.currentTimeMillis());
+
+        String otp = OTPGenerator.generateOTP(4);
+        long expiryTs = System.currentTimeMillis();
+        expiryTs += 5 * 60 * 1000; // 5 minutes
+
+        ph.setOtp(otp);
+        ph.setOtpExpiresAt(expiryTs);
 
         try {
             ApiFuture<Void> res = db.runTransaction(transaction -> {

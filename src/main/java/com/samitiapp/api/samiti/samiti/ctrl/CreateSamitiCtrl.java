@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -38,8 +37,8 @@ public class CreateSamitiCtrl {
 
     @Getter
     @Setter
-    public class CreateSamitiRequest {
-        private String samitiName;
+    public static class CreateSamitiRequest {
+        private String name;
 
         @JsonIgnore
         private String token;
@@ -85,7 +84,7 @@ public class CreateSamitiCtrl {
 
         String userId = r.getDecoded().getUserId();
 
-        Samiti samiti = new Samiti(UUID.randomUUID().toString(), r.getSamitiName(), userId);
+        Samiti samiti = new Samiti(UUID.randomUUID().toString(), r.getName(), userId);
 
         ApiFuture<WriteResult> result = db.collection(Samiti.table).document(samiti.getId()).set(samiti);
 
@@ -98,13 +97,37 @@ public class CreateSamitiCtrl {
                 .build());
     }
 
-    public SamitiApiResponse run(CreateSamitiRequest r, String token) throws InterruptedException, ExecutionException {
+    SamitiErrorResponse validate(CreateSamitiRequest r) {
+        log.info("validation check start");
 
+        if(r.getName().equals("")) {
+            return SamitiErrorResponse.builder()
+                    .statusCode(HttpStatus.FORBIDDEN)
+                    .appcode(ErrorCodes.OPERATION_NOT_PERMITTED)
+                    .message("name can't be empty")
+                    .build();
+        }
+
+        log.info("validation check finish");
+
+        return null;
+
+    }
+
+    public SamitiApiResponse run(CreateSamitiRequest r, String token) throws InterruptedException, ExecutionException {
+        SamitiErrorResponse error = validate(r);
+        if (null != error) {
+            log.info("validation check failed");
+            return new SamitiApiResponse(error);
+        }
+
+        r.setToken(token);
         SamitiErrorResponse err = permit(r);
         if (null != err) {
             log.info("permission check failed");
             return new SamitiApiResponse(err);
         }
+
         return createSamiti(r);
 
 

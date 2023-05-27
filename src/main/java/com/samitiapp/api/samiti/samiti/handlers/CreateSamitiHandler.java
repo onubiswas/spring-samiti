@@ -3,6 +3,7 @@ package com.samitiapp.api.samiti.samiti.handlers;
 import com.samitiapp.api.samiti.common.SamitiApiResponse;
 import com.samitiapp.api.samiti.samiti.ctrl.CreateSamitiCtrl;
 import lombok.extern.java.Log;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 @Log
 public class CreateSamitiHandler {
 
+    @Autowired
     private CreateSamitiCtrl ctrl;
 
     @PostMapping(path = "/v1/create",
